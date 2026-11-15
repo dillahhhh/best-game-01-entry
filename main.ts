@@ -16,9 +16,32 @@ import { cpSync, existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildDossier } from './vendor/makefun-game.ts';
+import { readdirSync, statSync } from 'node:fs';
 
 const here = fileURLToPath(new URL('.', import.meta.url));
 const out = process.env.MAKEFUN_OUTPUT_DIR ?? '/output';
+
+// Nova Harvest build checks: fail fast with a clear message instead of handing the
+// scorer a broken bundle. The entry is unplayable without its title page, and the
+// scorer refuses any screenshot over 256 KiB or more than 4 of them, so both are
+// verified here before anything is copied to /output.
+const indexPath = join(here, 'game', 'index.html');
+if (!existsSync(indexPath)) {
+  throw new Error('Nova Harvest build failed: game/index.html is missing');
+}
+const shotDir = join(here, 'screenshots');
+const shots = existsSync(shotDir)
+  ? readdirSync(shotDir).filter((f) => /\.(png|jpe?g)$/i.test(f)).sort()
+  : [];
+if (shots.length < 3 || shots.length > 4) {
+  throw new Error(`Nova Harvest build failed: expected 3-4 screenshots, found ${shots.length}`);
+}
+for (const shot of shots) {
+  const bytes = statSync(join(shotDir, shot)).size;
+  if (bytes > 262144) {
+    throw new Error(`Nova Harvest build failed: screenshots/${shot} is ${bytes} bytes (cap 262144)`);
+  }
+}
 
 mkdirSync(out, { recursive: true });
 cpSync(join(here, 'game'), join(out, 'game'), { recursive: true });
@@ -39,3 +62,7 @@ writeFileSync(
     game_path_max_bytes: 1000,
   }),
 );
+
+// Report what was handed in, so a local run shows the same numbers the scorer sees.
+const dossierBytes = statSync(join(out, 'dossier.json')).size;
+console.log(`Nova Harvest: ${shots.length} screenshots, dossier ${dossierBytes} bytes -> ${out}`);

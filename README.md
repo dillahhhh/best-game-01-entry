@@ -6,10 +6,16 @@
 
 An original arcade game for the [best-game-01 bounty](https://make.fun/bounty/best-game-01) on make.fun.
 
+**Play it now:** https://dillahhhh.github.io/best-game-01-entry/game/
+
 Steer your harvester through a living nebula: collect stardust to fill each
 wave's quota, chain pickups into a combo multiplier, dodge tumbling void
 shards, and survive the elite comet waves every 5th wave. Shield cells grant
 one free hit. Three lives, escalating pressure, and a score to chase.
+
+How to play: steer with WASD / arrow keys or the mouse, collect the glowing
+stardust until the quota bar fills, and dodge the void shards — grab a shield
+cell to survive one hit. P pauses, M mutes, R restarts.
 
 - Play with WASD / arrow keys or the mouse. P pauses, M mutes, R restarts.
 - Pure static files under `game/` — no network, no build step. Sound is
